@@ -1,3 +1,6 @@
+from SQL.connection import insertTask, deleteTask
+
+
 class Task:
     def __init__(self, title, desc, mode, assignees, severity, in_progress, init_date, due_date, isBug, isBonus, isDone):
         self.mTitle = title
@@ -18,10 +21,24 @@ class Task:
         self.mAssignees = assignees
         self.mSeverity = severity
         self.mInProgress = in_progress
-        if self.mInProgress:
+        # if self.mInProgress:
+        #     self.mIsYes = True
+        #     self.mIsNo = False
+        # else:
+        #     self.mIsNo = True
+        #     self.mIsYes = False
+        if self.mInProgress == "Yes":
+            self.mIsYes = True
+            self.mIsNo = False
+        elif self.mInProgress == "No":
+            self.mIsNo = True
+            self.mIsYes = False
+        elif self.mInProgress:
+            self.mInProgress = "Yes"
             self.mIsYes = True
             self.mIsNo = False
         else:
+            self.mInProgress = "No"
             self.mIsNo = True
             self.mIsYes = False
         self.mInitialDate = init_date
@@ -47,3 +64,11 @@ class Task:
         else:
             self.mIsDoneOff = True
             self.mIsDoneOn = False
+
+    def insertTaskToProjectID(self, project_id, user_id):
+        insertTask(project_id, self.mTitle, self.mDesc, self.mMode, self.mIsBug, self.mIsBonus, self.mInitialDate,
+                   self.mDueDate, self.mSeverity, self.mIsYes, self.mIsDone, self.mAssignees, user_id)
+
+    def deleteTaskToProjectID(self, project_name, user_id):
+        deleteTask(self.mTitle, project_name, user_id)
+

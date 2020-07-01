@@ -1,14 +1,19 @@
 import tkinter as tk  # python 3
 from View import taskList
 from View.login import Login
+from View.projectList import ProjectList
+from View.taskList import TaskList
 
 
 class View:
     def __init__(self):
         # initialize var
-        # self.mMenuFile = None
-        # self.mMenuHelp = None
-        # self.mMenuEdit = None
+        self.mMenuFile = None
+        self.mMenuHelp = None
+        self.mMenuEdit = None
+        self.mTaskList = None
+        self.mProjectList = None
+
         self.mTk = tk.Tk()
         frame = tk.Frame(self.mTk)
         # self.menu_bar(root)
@@ -18,27 +23,69 @@ class View:
         frame.pack()
         center(self.mTk)
 
-    # def menu_bar(self, root):
-    #     menu = tk.Menu(root)
-    #     self.mMenuFile = tk.Menu(menu, tearoff=0)
-    #     self.mMenuFile.add_command(label="New Project")
-    #     self.mMenuFile.add_command(label="New Task")
-    #     self.mMenuFile.add_command(label="Update Member...")
-    #     self.mMenuFile.add_command(label="Open...")
-    #     self.mMenuFile.add_command(label="Save...")
-    #     self.mMenuFile.add_command(label="Save As...")
-    #     self.mMenuFile.add_separator()
-    #     self.mMenuFile.add_command(label="Exit")
-    #     menu.add_cascade(label="File", menu=self.mMenuFile)
-    #     self.mMenuEdit = tk.Menu(menu, tearoff=0)
-    #     self.mMenuEdit.add_command(label="Filter...")
-    #     self.mMenuEdit.add_command(label="Reset Filter")
-    #     menu.add_cascade(label="Edit", menu=self.mMenuEdit)
-    #     self.mMenuHelp = tk.Menu(menu, tearoff=0)
-    #     self.mMenuHelp.add_command(label="Help")
-    #     self.mMenuHelp.add_command(label="About")
-    #     menu.add_cascade(label="Help", menu=self.mMenuHelp)
-    #     root.config(menu=menu)
+    def createProjectList(self, lst):
+        print("project list")
+        self.mTk.destroy()
+        self.mTk = tk.Tk()
+        # self.menuBar(self.mTk)
+        self.menuBarProject(self.mTk)
+        self.mProjectList = ProjectList(self.mTk)
+
+        if lst is not None:
+            for x in lst:
+                self.mProjectList.mTvProjectList.insert("", "end", values=(x[0]))
+
+    # def updateTaskList(self, name):
+    #     print("update task list")
+    #     self.mTk.destroy()
+    #     self.mTk = tk.Tk()
+    #     self.menuBar(self.mTk)
+    #     self.mTaskList = TaskList(self.mTk, name)
+
+    def createTaskList(self, name):
+        print("create task list")
+        self.mTk.destroy()
+        self.mTk = tk.Tk()
+        self.menuBar(self.mTk)
+        self.mTaskList = TaskList(self.mTk, name)
+
+    def menuBarProject(self, root):
+        menu = tk.Menu(root)
+        self.mMenuFile = tk.Menu(menu, tearoff=0)
+        self.mMenuFile.add_command(label="New Project")
+        self.mMenuFile.add_separator()
+        self.mMenuFile.add_command(label="Logout")
+        self.mMenuFile.add_command(label="Exit")
+        menu.add_cascade(label="File", menu=self.mMenuFile)
+        self.mMenuHelp = tk.Menu(menu, tearoff=0)
+        self.mMenuHelp.add_command(label="Help")
+        self.mMenuHelp.add_command(label="About")
+        menu.add_cascade(label="Help", menu=self.mMenuHelp)
+        root.config(menu=menu)
+
+    def menuBar(self, root):
+        menu = tk.Menu(root)
+        self.mMenuFile = tk.Menu(menu, tearoff=0)
+        self.mMenuFile.add_command(label="New Project")
+        self.mMenuFile.add_command(label="New Task")
+        self.mMenuFile.add_command(label="Update Members")
+        self.mMenuFile.add_command(label="View Projects")
+        # self.mMenuFile.add_command(label="Open...")
+        # self.mMenuFile.add_command(label="Save...")
+        # self.mMenuFile.add_command(label="Save As...")
+        self.mMenuFile.add_separator()
+        self.mMenuFile.add_command(label="Logout")
+        self.mMenuFile.add_command(label="Exit")
+        menu.add_cascade(label="File", menu=self.mMenuFile)
+        self.mMenuEdit = tk.Menu(menu, tearoff=0)
+        self.mMenuEdit.add_command(label="Filters")
+        self.mMenuEdit.add_command(label="Reset Filter")
+        menu.add_cascade(label="Edit", menu=self.mMenuEdit)
+        self.mMenuHelp = tk.Menu(menu, tearoff=0)
+        self.mMenuHelp.add_command(label="Help")
+        self.mMenuHelp.add_command(label="About")
+        menu.add_cascade(label="Help", menu=self.mMenuHelp)
+        root.config(menu=menu)
 
 
 def center(win):

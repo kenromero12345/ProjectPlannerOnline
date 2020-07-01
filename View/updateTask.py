@@ -1,11 +1,10 @@
 import tkinter as tk
 
 from View.addTask import AddTask
-
+from datetime import datetime
 
 class UpdateTask(AddTask):
     def __init__(self, t, members, member_names, task):
-        connection
         AddTask.__init__(self, t, members, member_names)
         self.mVarTitle.set(task.mTitle)
         self.mVarInProgress.set(task.mInProgress)
@@ -22,8 +21,10 @@ class UpdateTask(AddTask):
         # print(task.mAssignees)
 
         self.mVarMode.set(task.mMode)
-        self.mDEInitial.set_date(task.mInitialDate)
-        self.mDEDue.set_date(task.mDueDate)
+        if isinstance(task.mInitialDate, str):
+            self.mDEInitial.set_date(datetime.strptime(task.mInitialDate, '%Y-%m-%d'))
+        else:
+            self.mDEInitial.set_date(task.mInitialDate)
         self.mIsBug = task.mIsBugOn
         self.mIsBonus = task.mIsBonusOn
         if self.mIsBug:

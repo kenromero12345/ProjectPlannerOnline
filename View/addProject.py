@@ -5,7 +5,7 @@ from View import view
 NORM_FONT = ("Verdana", 10)
 
 
-class AddMember:
+class AddProject:
 
     def __init__(self, t):
         self.mTk = t
@@ -13,11 +13,11 @@ class AddMember:
         top_frame = tk.Frame(t)
         self.mVarName = tk.StringVar(self.mTk)
         self.mVarName.set("")
-        entry_member = ttk.Entry(self.mTk, font=NORM_FONT, textvariable=self.mVarName)
-        self.mTk.wm_title("Adding Member...")
-        label_member = ttk.Label(self.mTk, text="Member", font=NORM_FONT)
-        label_member.pack(side="top", fill="x", pady=(5, 2), padx=5)
-        entry_member.pack(side="top", fill="x", padx=10)
+        entry_project = ttk.Entry(self.mTk, font=NORM_FONT, textvariable=self.mVarName)
+        self.mTk.wm_title("Adding Project...")
+        label_name = ttk.Label(self.mTk, text="Name", font=NORM_FONT)
+        label_name.pack(side="top", fill="x", pady=(5, 2), padx=5)
+        entry_project.pack(side="top", fill="x", padx=10)
         top_frame.pack(side="top", expand=True, fill='both')
         self.mFrameCommand = ttk.Frame(self.mTk)
         self.mBtnSubmit = tk.Button(self.mFrameCommand, text="Submit", bg="green", fg="white")

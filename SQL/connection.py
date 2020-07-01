@@ -1,12 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
 
-
-# class Connection:
-#     def __init__(self):
-#         self.connection = create_connection("localhost", "root", "", "sm_app")
-
-
 # def create_connection(host_name, user_name, user_password):
 #     con = None
 #     try:
@@ -20,9 +14,15 @@ from mysql.connector import Error
 #         print(f"The error '{e}' occurred")
 #
 #     return con
+connection = None
 
 
-def create_connection(host_name, user_name, user_password, db_name):
+def connect():
+    global connection
+    connection = createConnection("localhost", "root", "", "sm_app")
+
+
+def createConnection(host_name, user_name, user_password, db_name):
     con = None
     try:
         con = mysql.connector.connect(
@@ -31,12 +31,20 @@ def create_connection(host_name, user_name, user_password, db_name):
             passwd=user_password,
             database=db_name
         )
+        # deleteAllTables(con)
+        executeQuery(con, createUsersTable)
+        executeQuery(con, createProjectsTable)
+        executeQuery(con, createMembersTable)
+        executeQuery(con, createTasksTable)
+        executeQuery(con, createAssigneesTable)
         print("Connection to MySQL DB successful")
     except Error as e:
         print(f"The error '{e}' occurred")
 
     return con
 
+
+# connection = createConnection("localhost", "root", "", "sm_app")
 
 # def create_database(con, query):
 #     cursor = con.cursor()
@@ -46,7 +54,7 @@ def create_connection(host_name, user_name, user_password, db_name):
 #     except Error as e:
 #         print(f"The error '{e}' occurred")
 
-def execute_query(con, query):
+def executeQuery(con, query):
     cursor = con.cursor()
     try:
         cursor.execute(query)
@@ -56,7 +64,7 @@ def execute_query(con, query):
         print(f"The error '{e}' occurred")
 
 
-def execute_query_w_val(con, query, val):
+def executeQueryWVal(con, query, val):
     cursor = con.cursor()
     try:
         cursor.execute(query, val)
@@ -66,7 +74,7 @@ def execute_query_w_val(con, query, val):
         print(f"The error '{e}' occurred")
 
 
-def select_query_w_val(con, query, val):
+def selectQueryWVal(con, query, val):
     cursor = con.cursor()
     try:
         cursor.execute(query, val)
@@ -79,41 +87,43 @@ def select_query_w_val(con, query, val):
 # connection = create_connection("localhost", "root", "")
 # create_database_query = "CREATE DATABASE sm_app"
 # create_database(connection, create_database_query)
-connection = create_connection("localhost", "root", "", "sm_app")
+# connection = create_connection("localhost", "root", "", "sm_app")
 
 # CREATE TABLES
 
-create_users_table = """
+createUsersTable = """
 CREATE TABLE IF NOT EXISTS Users (
   id INT AUTO_INCREMENT, 
-  name TEXT NOT NULL, 
+  name VARCHAR(50) NOT NULL, 
   password TEXT NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE = InnoDB
 """
 
-create_projects_table = """
+createProjectsTable = """
 CREATE TABLE IF NOT EXISTS Projects (
-  id INT AUTO_INCREMENT, 
-  name TEXT NOT NULL, 
-  PRIMARY KEY (id)
-) ENGINE = InnoDB
-"""
-
-create_users_projects_table = """
-CREATE TABLE IF NOT EXISTS UsersProjects (
-  user_id INT NOT NULL, 
-  project_id INT NOT NULL, 
-  PRIMARY KEY (user_id, project_id),
-  FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  project_id INT AUTO_INCREMENT, 
+  name VARCHAR(100) NOT NULL, 
+  user_id INT NOT NULL,
+  PRIMARY KEY (project_id),
   FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB
 """
 
-create_tasks_table = """
+createMembersTable = """
+CREATE TABLE IF NOT EXISTS Members (
+  user_id INT NOT NULL,
+  project_id INT NOT NULL,
+  PRIMARY KEY (user_id, project_id),
+  FOREIGN KEY (project_id) REFERENCES Projects(project_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB
+"""
+
+createTasksTable = """
 CREATE TABLE IF NOT EXISTS Tasks (
   id INT AUTO_INCREMENT, 
-  title VARCHAR(200) UNIQUE, 
+  title VARCHAR(200) NOT NULL, 
   description TEXT,
   mode VARCHAR(10) NOT NULL,
   bug BOOLEAN NOT NULL,
@@ -125,11 +135,11 @@ CREATE TABLE IF NOT EXISTS Tasks (
   done BOOLEAN NOT NULL,
   project_id INT NOT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY (project_id) REFERENCES Projects(project_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB
 """
 
-create_assignees_table = """
+createAssigneesTable = """
 CREATE TABLE IF NOT EXISTS Assignees (
   task_id INT NOT NULL, 
   user_id INT NOT NULL,
@@ -140,45 +150,57 @@ CREATE TABLE IF NOT EXISTS Assignees (
 """
 
 
-# # EXECUTE CREATE TABLES
-# execute_query(connection, create_users_table)
-# execute_query(connection, create_projects_table)
-# execute_query(connection, create_users_projects_table)
-# execute_query(connection, create_tasks_table)
-# execute_query(connection, create_assignees_table)
+# # # EXECUTE CREATE TABLES
+# executeQuery(connection, createUsersTable)
+# executeQuery(connection, createProjectsTable)
+# executeQuery(connection, createUsersProjectsTable)
+# executeQuery(connection, createTasksTable)
+# executeQuery(connection, createAssigneesTable)
+
 
 # INSERT
 def insertUser(name, password):
-    sql = "INSERT INTO Users ('name', 'password') VALUES (%s, %s)"
+    sql = "INSERT INTO Users (name, password) VALUES (%s, %s)"
     val = (name, password)
-
-    execute_query_w_val(connection, sql, val)
+    # print(name, password)
+    executeQueryWVal(connection, sql, val)
 
 
 def insertProject(user_name, project_name):
-    sql = "INSERT INTO Projects ('name') VALUES (%s)"
-    val = project_name
+    # print(selectUser(user_name)[0][0])
+    # selectUser(user_name)[0][0]
+    sql = "INSERT INTO Projects (name, user_id) VALUES (%s, %s)"
+    val = (project_name, selectUser(user_name)[0][0])
 
-    execute_query_w_val(connection, sql, val)
+    executeQueryWVal(connection, sql, val)
 
-    user_id = selectUserID(user_name)
 
-    project_id = selectProjectID(project_name)
+def insertMember(user_id, user_name, project_name):
+    # print(selectUser(user_name)[0][0])
+    # selectUser(user_name)[0][0]
+    member_id = selectUser(user_name)[0][0]
+    # if user_id != member_id:
+    sql = "INSERT INTO Members (project_id, user_id) VALUES (%s, %s)"
+    val = (selectProjectID(project_name, user_id)[0][0], member_id)
 
-    sql = "INSERT INTO UsersProjects VALUES (%s, %s)"
-    val = (user_id, project_id)
-
-    execute_query_w_val(connection, sql, val)
+    executeQueryWVal(connection, sql, val)
 
 
 def insertTask(project_name, title, description, mode, bug, bonus, initial_date, due_date, severity, in_progress, done,
-               assignees):
-    project_id = selectProjectID(project_name)
+               assignees, user_id):
+    project_id = selectProjectID(project_name, user_id)[0][0]
+    # print(project_id)
+    # print(title, description, mode, bug, bonus, initial_date, due_date, severity, in_progress, done, project_id)
 
-    sql = "INSERT INTO Tasks VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    val = (title, description, mode, bug, bonus, initial_date, due_date, severity, in_progress, done, project_id)
+    sql = "INSERT INTO Tasks (title, description, mode, bug, bonus, initial_date, due_date, severity, " \
+          "in_progress, done, project_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    # val = (title, description, mode, bug, bonus, str(initial_date) + "00:00:00", str(due_date) + "00:00:00", severity,
+    #        in_progress, done, project_id)
+    print(in_progress)
+    val = (title, description, mode, bug, bonus, initial_date, due_date, severity,
+           in_progress, done, project_id)
 
-    execute_query_w_val(connection, sql, val)
+    executeQueryWVal(connection, sql, val)
 
     task_id = selectTaskID(title)
 
@@ -188,57 +210,69 @@ def insertTask(project_name, title, description, mode, bug, bonus, initial_date,
         sql = "INSERT INTO Assignees VALUES (%s, %s)"
         val = (task_id, user_id)
 
-        execute_query_w_val(connection, sql, val)
+        executeQueryWVal(connection, sql, val)
 
 
 # DELETE
 def deleteUser(name):
-    delete_comment = "DELETE FROM Users WHERE name = $s"
-    val = name
-    execute_query_w_val(connection, delete_comment, val)
+    delete_comment = "DELETE FROM Users WHERE name = %s"
+    val = (name,)
+    executeQueryWVal(connection, delete_comment, val)
 
 
 def deleteProject(name):
-    delete_comment = "DELETE FROM Projects WHERE name = $s"
-    val = name
-    execute_query_w_val(connection, delete_comment, val)
+    delete_comment = "DELETE FROM Projects WHERE name = %s"
+    val = (name,)
+    executeQueryWVal(connection, delete_comment, val)
+    # executeQuery(connection, delete_comment)
 
 
-def deleteTask(title):
-    delete_comment = "DELETE FROM Tasks WHERE title = $s"
-    val = title
-    execute_query_w_val(connection, delete_comment, val)
+def deleteMember(user_name, project_name, user_id):
+    project_id = selectProjectID(project_name, user_id)
+    user_id = selectUserID(user_name)
+
+    delete_comment = "DELETE FROM Members WHERE project_id = %s and user_id = %s"
+    val = (project_id, user_id)
+    executeQueryWVal(connection, delete_comment, val)
+
+
+def deleteTask(title, project_name, user_id):
+    project_id = selectProjectID(project_name, user_id)
+
+    delete_comment = "DELETE FROM Tasks WHERE title = %s and project_id = %s"
+    val = (title, project_id)
+    executeQueryWVal(connection, delete_comment, val)
 
 
 # UPDATE
 def updateUser(old_name, name, password):
     user_id = selectUserID(old_name)
 
-    sql = "UPDATE Users SET name = %s, password = %s WHERE id = $s"
+    sql = "UPDATE Users SET name = %s, password = %s WHERE id = %s"
     val = (name, password, user_id)
 
-    execute_query_w_val(connection, sql, val)
+    executeQueryWVal(connection, sql, val)
 
 
 def updateProject(old_project_name, project_name):
     project_id = selectProjectID(old_project_name)
 
-    sql = "UPDATE Project SET name = %s, WHERE id = $s"
+    sql = "UPDATE Project SET name = %s, WHERE id = %s"
     val = (project_name, project_id)
-    execute_query_w_val(connection, sql, val)
+    executeQueryWVal(connection, sql, val)
 
 
 def updateTask(old_title, title, description, mode, bug, bonus, initial_date, due_date, severity, in_progress, done,
                assignees):
     task_id = selectTaskID(old_title)
 
-    sql = "UPDATE Project SET name = %s, %s, %s, %s, %s, %s, %s, %s, %s, %s WHERE id = $s"
+    sql = "UPDATE Project SET name = %s, %s, %s, %s, %s, %s, %s, %s, %s, %s WHERE id = %s"
     val = (title, description, mode, bug, bonus, initial_date, due_date, severity, in_progress, done, task_id)
-    execute_query_w_val(connection, sql, val)
+    executeQueryWVal(connection, sql, val)
 
-    delete_comment = "DELETE FROM Assignees WHERE task_id = $s"
+    delete_comment = "DELETE FROM Assignees WHERE task_id = %s"
     val = task_id
-    execute_query_w_val(connection, delete_comment, val)
+    executeQueryWVal(connection, delete_comment, val)
 
     for name in assignees:
         user_id = selectUserID(name)
@@ -246,57 +280,162 @@ def updateTask(old_title, title, description, mode, bug, bonus, initial_date, du
         sql = "INSERT INTO Assignees VALUES (%s, %s)"
         val = (task_id, user_id)
 
-        execute_query_w_val(connection, sql, val)
+        executeQueryWVal(connection, sql, val)
 
 
 # SELECT ID
 def selectUserID(name):
     sql = "SELECT id FROM Users WHERE name = %s"
-    val = name
+    val = (name,)
 
-    return select_query_w_val(connection, sql, val)
+    return selectQueryWVal(connection, sql, val)
 
 
-def selectProjectID(name):
-    sql = "SELECT id FROM Projects WHERE name = %s"
-    val = name
+def selectProjectID(name, user_id):
+    sql = "SELECT project_id FROM Projects WHERE name = %s AND user_id = %s"
+    val = (name, user_id)
 
-    return select_query_w_val(connection, sql, val)
+    return selectQueryWVal(connection, sql, val)
 
 
 def selectTaskID(title):
     sql = "SELECT id FROM tasks WHERE title = %s"
-    val = title
+    val = (title,)
 
-    return select_query_w_val(connection, sql, val)
+    return selectQueryWVal(connection, sql, val)
 
 
 def selectUser(name):
     sql = "SELECT * FROM Users WHERE name = %s"
-    val = name
+    val = (name,)
+    return selectQueryWVal(connection, sql, val)
 
-    return select_query_w_val(connection, sql, val)
+
+def selectUserFromNameAndPW(name, password):
+    sql = "SELECT * FROM Users WHERE name = %s AND password = %s"
+    val = (name, password)
+    return selectQueryWVal(connection, sql, val)
 
 
 def selectProject(name):
     sql = "SELECT * FROM Projects WHERE name = %s"
-    val = name
+    val = (name,)
 
-    return select_query_w_val(connection, sql, val)
+    return selectQueryWVal(connection, sql, val)
 
 
-def selectTask(title):
-    sql = "SELECT * FROM Tasks WHERE title = %s"
-    val = title
+def selectProjectFromUserID(user_id):
+    # sql = "SELECT UsersProjects.project_id FROM UsersProjects WHERE UsersProjects.user_id = %s"
+    # val = (user_id,)
+    #
+    # project_id = selectQueryWVal(connection, sql, val)
 
-    return select_query_w_val(connection, sql, val)
+    # if not project_id:
+    #     return [()]
+    # else:
+    #     project_id = project_id[0][0]
+
+    sql = "SELECT Projects.name FROM Projects WHERE user_id = %s"
+    val = (user_id,)
+
+    return selectQueryWVal(connection, sql, val)
+
+
+# def selectTask(title):
+#     sql = "SELECT * FROM Tasks WHERE title = %s"
+#     val = (title,)
+#
+#     return selectQueryWVal(connection, sql, val)
+
+
+def selectTasks(name, user_id):
+    project_id = selectProjectID(name, user_id)[0][0]
+    print(project_id)
+    sql = "SELECT * FROM Tasks WHERE project_id = %s"
+    val = (project_id,)
+
+    return selectQueryWVal(connection, sql, val)
+
+
+def selectTasksAssignees(name, user_id):
+    task_id = selectTasks(name, user_id)[0][0]
+
+    sql = "SELECT user_id FROM Assignees WHERE task_id = %s"
+    val = (task_id,)
+
+    names = []
+
+    for x in selectQueryWVal(connection, sql, val):
+        sql = "SELECT name FROM Users WHERE user_id = %s"
+        val = (x[0],)
+        names.append(selectQueryWVal(connection, sql, val)[0][0])
+
+    return names
 
 
 def selectAssigneesName(title):
     task_id = selectTaskID(title)
 
-    sql = "SELECT Users.name FROM Assignees INNER JOIN Users Users.id = Assignees.user_id WHERE task_id = %s"
+    sql = "SELECT Users.name FROM Assignees INNER JOIN Users ON Users.id = Assignees.user_id WHERE task_id = %s"
     val = task_id
 
-    return select_query_w_val(connection, sql, val)
+    return selectQueryWVal(connection, sql, val)
 
+
+def selectMembers(name, user_id):
+    project_id = selectProjectID(name, user_id)[0][0]
+    # print(project_id)
+
+    sql = "SELECT name FROM Members INNER JOIN Users ON Users.id = Members.user_id WHERE project_id = %s"
+    val = (project_id,)
+    #
+    # sql = "SELECT user_id FROM Members WHERE Members.project_id = %s"
+    # val = (project_id,)
+    # user_ids = selectQueryWVal(connection, sql, val)
+    # for x in user_ids:
+    #
+    # sql = "SELECT name FROM Users WHERE .project_id = %s"
+    # val = (project_id,)
+    #
+    return selectQueryWVal(connection, sql, val)
+
+
+def deleteAllTables(con):
+    # sql = """
+    #         DROP TABLE IF EXISTS Assignees;
+    #         DROP TABLE IF EXISTS Tasks;
+    #         DROP TABLE IF EXISTS Projects;
+    #         DROP TABLE IF EXISTS Users;
+    #         """
+    #
+    # executeQuery(connection, sql)
+
+    sql = """
+            DROP TABLE IF EXISTS Assignees;
+            """
+
+    executeQuery(con, sql)
+
+    sql = """
+            DROP TABLE IF EXISTS Tasks;
+            """
+
+    executeQuery(con, sql)
+
+    sql = """
+            DROP TABLE IF EXISTS Members;
+            """
+
+    executeQuery(con, sql)
+
+    sql = """
+            DROP TABLE IF EXISTS Projects;
+            """
+
+    executeQuery(con, sql)
+
+    sql = """
+            DROP TABLE IF EXISTS Users;
+            """
+
+    executeQuery(con, sql)

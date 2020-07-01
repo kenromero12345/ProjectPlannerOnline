@@ -14,9 +14,13 @@ class Model:
 
     def __init__(self):
         self.mTaskList = []
+        self.mProjectList = []
         self.mMemberList = []
+        self.mUserID = ""
+        self.mUsername = ""
         self.mSavedPath = None
         self.mProjectName = ""
+        self.mPassword = ""
 
     def sort_by_title(self, reverse):
         self.mTaskList.sort(reverse=reverse, key=lambda t: t.mTitle)
@@ -45,32 +49,41 @@ class Model:
 
     def load(self, file):
         var = pickle.load(open(file, "rb"))
-        self.mTaskList = var.mTaskList
-        self.mProjectName = var.mProjectName
-
-    def load_path(self, file):
-        self.mSavedPath = pickle.load(open(file, "rb"))
-        self.mProjectName = self.mSavedPath.split("/")[-1].split(".")[0]
-
-    def save_as_task_list(self):
-        file = asksaveasfilename(filetypes=files, defaultextension=files)
-        if not file:  # asksaveasfilename return `None` if dialog closed with "cancel".
-            return False
-        self.save(file)
-        self.mSavedPath = file
-        self.mProjectName = self.mSavedPath.split("/")[-1].split(".")[0]
-        self.save_path(str(Path(os.getcwd()).parent) + "\\auto_save_path.txt")
-        return True
-
-    def save_task_list(self):
-        self.save(self.mSavedPath)
+        self.mUsername = var.mUsername
+        self.mPassword = var.mPassword
 
     def save(self, file):
-        var = Save(self.mProjectName, self.mTaskList)
+        var = Save(self.mUsername, self.mPassword)
         pickle.dump(var, open(file, "wb"))
 
-    def save_path(self, file):
-        pickle.dump(self.mSavedPath, open(file, "wb"))
+    # def load(self, file):
+    #     var = pickle.load(open(file, "rb"))
+    #     self.mTaskList = var.mTaskList
+    #     self.mProjectName = var.mProjectName
+    #
+    # def load_path(self, file):
+    #     self.mSavedPath = pickle.load(open(file, "rb"))
+    #     self.mProjectName = self.mSavedPath.split("/")[-1].split(".")[0]
+    #
+    # def save_as_task_list(self):
+    #     file = asksaveasfilename(filetypes=files, defaultextension=files)
+    #     if not file:  # asksaveasfilename return `None` if dialog closed with "cancel".
+    #         return False
+    #     self.save(file)
+    #     self.mSavedPath = file
+    #     self.mProjectName = self.mSavedPath.split("/")[-1].split(".")[0]
+    #     self.save_path(str(Path(os.getcwd()).parent) + "\\auto_save_path.txt")
+    #     return True
+    #
+    # def save_task_list(self):
+    #     self.save(self.mSavedPath)
+    #
+    # def save(self, file):
+    #     var = Save(self.mProjectName, self.mTaskList)
+    #     pickle.dump(var, open(file, "wb"))
+    #
+    # def save_path(self, file):
+    #     pickle.dump(self.mSavedPath, open(file, "wb"))
 
     def getNames(self):
         lst = []

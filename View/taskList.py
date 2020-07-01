@@ -6,7 +6,7 @@ WIDTH = 45
 
 
 class TaskList:
-    def __init__(self, frame):
+    def __init__(self, frame, name):
         self.mTk = frame
         top_frame = tk.Frame(frame)
 
@@ -58,3 +58,5 @@ class TaskList:
         self.mTvTaskList.configure(yscrollcommand=self.mScrollbar.set)
 
         bottom_frame.pack(side="top", expand=True, fill='both')
+
+        self.mTk.wm_title("Project Planner - Tasks - " + name)

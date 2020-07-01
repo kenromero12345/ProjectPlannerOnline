@@ -76,9 +76,9 @@ class AddTask:
         self.mVarInProgress.set("Yes")  # initialize
         label_assignees = ttk.Label(self.mTk, text="Assignees", font=NORM_FONT)
         label_assignees.pack(side="top", fill="x", pady=(5, 2), padx=5)
-        if len(members) == 0:
-            members.append(Member("Me"))
-            member_names.append("Me")
+        # if len(members) == 0:
+        #     members.append(Member("Me"))
+        #     member_names.append("Me")
         # self.mVarAssignees.set(members[0].mName)
         # cb_assignees = ttk.Combobox(self.mTk, values=member_names, state="readonly",
         #                             textvariable=self.mVarAssignees)

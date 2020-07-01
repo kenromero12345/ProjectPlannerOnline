@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from View import view
 
-cols = ("Name")
+cols = ("Name",)
 WIDTH = 45
 
 
@@ -37,3 +37,4 @@ class UpdateMembers:
 
         bottom_frame.pack(side="top", expand=True, fill='both')
         view.center(self.mTk)
+
