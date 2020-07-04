@@ -118,6 +118,21 @@ class Controller:
         print("view projects")
         self.setupProjectList()
 
+    def autoLogin(self):
+        if not(self.mView.mLogin.mVarUsername.get() == "" and self.mView.mLogin.mVarPassword.get() == ""):
+            print("login")
+            user = selectUserFromNameAndPW(self.mView.mLogin.mVarUsername.get(),
+                                           self.mView.mLogin.mVarPassword.get())
+            if len(user) != 0:
+                self.mModel.mPassword = self.mView.mLogin.mVarPassword.get()
+                self.mModel.mUserID = user[0][0]
+                self.mModel.mPassword = user[0][2]
+                self.mModel.mUsername = user[0][1]
+                self.setupProjectList()
+                self.mModel.save(str(self.mPath.parent) + AUTO_LOGIN)
+        else:
+            print("no saved login")
+
     def login(self):
         if not(self.mView.mLogin.mVarUsername.get() == "" and self.mView.mLogin.mVarPassword.get() == ""):
             print("login")
@@ -158,11 +173,18 @@ class Controller:
 
     def projectClicked(self, instance):
         print("project clicked")
+        # print(self.mView.mProjectList.mTvProjectList.identify_region(instance.x, instance.y))
+        # nothing = self.mView.mProjectList.mTvProjectList.identify("nothing", instance.x, instance.y)
+        # print(nothing)
         region = self.mView.mProjectList.mTvProjectList.identify("region", instance.x, instance.y)
         item = self.mView.mProjectList.mTvProjectList.identify("item", instance.x, instance.y)
         if region == "heading":
             print("sort project name")
+            self.destroyEditDeletePopup()
             # self.sort(instance)
+        elif region == "nothing":
+            print("nothing")
+            self.destroyEditDeletePopup()
         elif item:
             if len(self.mView.mProjectList.mTvProjectList.selection()) > 0:
                 item = self.mView.mProjectList.mTvProjectList.selection()[0]
@@ -180,6 +202,7 @@ class Controller:
                         self.destroyEditDeletePopup()
                     temp_root = tk.Toplevel(self.mView.mTk)
                     self.mEditDeletePopup = EditDeletePopup(temp_root, self.mView.mProjectList.mTk)
+                    self.mEditDeletePopup.mBtnUpdate.config(text="Open")
                     self.mEditDeletePopup.mBtnUpdate.config(command=lambda: self.createAndDestroyUpdateProject(name))
                     self.mEditDeletePopup.mBtnDelete.config(command=lambda: self.deleteProject(name))
 
@@ -264,9 +287,14 @@ class Controller:
         temp_root = tk.Toplevel(self.mView.mTk)
         pauseTaskList(temp_root)
         self.mRegister = Register(temp_root)
-        self.mRegister.mBtnRegister.config(command=self.registerUser)
+        self.mRegister.mBtnRegister.config(command=self.submitRegister)
+        self.mRegister.mBtnCancel.config(command=self.cancelRegister)
+        self.mRegister.mVarUsername.set(self.mView.mLogin.mVarUsername.get())
 
-    def registerUser(self):
+    def cancelRegister(self):
+        self.mRegister.mTk.destroy()
+
+    def submitRegister(self):
         print("register user")
         if "" == self.mRegister.mVarUsername.get():
             messagebox.showwarning(title="Warning", message="Username cannot be blank")
@@ -281,7 +309,7 @@ class Controller:
         elif len(self.mRegister.mVarPassword.get()) < 8:
             messagebox.showwarning(title="Warning", message="Password should have 8 characters!")
         elif self.mRegister.mVarPassword.get() != self.mRegister.mVarRePassword.get():
-            messagebox.showwarning(title="Warning", message="Password and RePassword is not the same!")
+            messagebox.showwarning(title="Warning", message="Password and Re-Password is not the same!")
         else:
             insertUser(self.mRegister.mVarUsername.get(), self.mRegister.mVarPassword.get())
         self.mRegister.mTk.destroy()
@@ -292,7 +320,7 @@ class Controller:
                 self.mModel.load(str(self.mPath.parent) + AUTO_LOGIN)
                 self.mView.mLogin.mVarUsername.set(self.mModel.mUsername)
                 self.mView.mLogin.mVarPassword.set(self.mModel.mPassword)
-                self.login()
+                self.autoLogin()
             except _pickle.UnpicklingError:
                 messagebox.showerror("Error", "There was an error on the auto_login.txt file loaded!")
         self.mView.mTk.mainloop()
@@ -535,6 +563,9 @@ class Controller:
         item = self.mView.mTaskList.mTvTaskList.identify("item", instance.x, instance.y)
         if region == "heading":
             self.sort(instance)
+        elif region == "nothing":
+            print("nothing")
+            self.destroyEditDeletePopup()
         # elif self.mView.mTaskList.mLblDelete['text'] == DELETE_ON:
         #     if len(self.mView.mTaskList.mTvTaskList.selection()) > 0:
         #         item = self.mView.mTaskList.mTvTaskList.selection()[0]
@@ -568,8 +599,9 @@ class Controller:
         self.taskListUpdate()
 
     def destroyEditDeletePopup(self):
-        self.mEditDeletePopup.mTk.destroy()
-        self.mEditDeletePopup = None
+        if self.mEditDeletePopup:
+            self.mEditDeletePopup.mTk.destroy()
+            self.mEditDeletePopup = None
 
     def createAndDestroyUpdateTask(self, tsk):
         self.destroyEditDeletePopup()
@@ -669,7 +701,7 @@ class Controller:
         self.memberListUpdate()
 
     def memberClicked(self, instance):
-        # region = self.mUpdateMembers.mTvMemberList.identify("region", instance.x, instance.y)
+        region = self.mUpdateMembers.mTvMemberList.identify("region", instance.x, instance.y)
         item = self.mUpdateMembers.mTvMemberList.identify("item", instance.x, instance.y)
         # if region == "heading":
         #     self.sort(instance)
@@ -691,6 +723,9 @@ class Controller:
                     # self.mEditDeletePopup.mBtnUpdate.config(command=lambda: self.createAndDestroyUpdateMember(m))
                     self.mEditDeletePopup.mBtnUpdate.destroy()
                     self.mEditDeletePopup.mBtnDelete.config(command=lambda: self.deleteMember(m))
+        elif region == "nothing" or region == "heading":
+            print("nothing")
+            self.destroyEditDeletePopup()
 
     # def createAndDestroyUpdateMember(self, m):
     #     self.mEditDeletePopup.mTk.destroy()

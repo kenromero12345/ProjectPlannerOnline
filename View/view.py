@@ -15,6 +15,7 @@ class View:
         self.mProjectList = None
 
         self.mTk = tk.Tk()
+        self.mTk.resizable(False, False)
         frame = tk.Frame(self.mTk)
         # self.menu_bar(root)
         # self.mTaskList = taskList.TaskList(frame)
@@ -27,6 +28,7 @@ class View:
         print("project list")
         self.mTk.destroy()
         self.mTk = tk.Tk()
+        self.mTk.resizable(False, False)
         # self.menuBar(self.mTk)
         self.menuBarProject(self.mTk)
         self.mProjectList = ProjectList(self.mTk)
@@ -34,6 +36,8 @@ class View:
         if lst is not None:
             for x in lst:
                 self.mProjectList.mTvProjectList.insert("", "end", values=(x[0]))
+
+        center(self.mTk)
 
     # def updateTaskList(self, name):
     #     print("update task list")
@@ -46,6 +50,7 @@ class View:
         print("create task list")
         self.mTk.destroy()
         self.mTk = tk.Tk()
+        self.mTk.resizable(False, False)
         self.menuBar(self.mTk)
         self.mTaskList = TaskList(self.mTk, name)
 
