@@ -139,7 +139,7 @@ class Controller:
             user = selectUserFromNameAndPW(self.mView.mLogin.mVarUsername.get(),
                                            self.mView.mLogin.mVarPassword.get())
             if len(user) == 0:
-                messagebox.showwarning(title="Warning", message="Username and Password is not found")
+                messagebox.showerror(title="Error", message="Username and Password is not found")
             else:
                 self.mModel.mPassword = self.mView.mLogin.mVarPassword.get()
                 self.mModel.mUserID = user[0][0]
@@ -268,7 +268,7 @@ class Controller:
         print("start project")
         # self.addProject.mTk.destroy()
         if self.addProject.mVarName.get() in self.mModel.mProjectList:
-            messagebox.showwarning(title="Warning", message="Project name should be unique!")
+            messagebox.showerror(title="Error", message="Project name should be unique!")
         else:
             insertProject(self.mModel.mUsername, self.addProject.mVarName.get())
             self.mModel.mProjectName = self.addProject.mVarName.get()
@@ -297,19 +297,19 @@ class Controller:
     def submitRegister(self):
         print("register user")
         if "" == self.mRegister.mVarUsername.get():
-            messagebox.showwarning(title="Warning", message="Username cannot be blank")
+            messagebox.showerror(title="Error", message="Username cannot be blank")
         elif "" == self.mRegister.mVarPassword.get():
-            messagebox.showwarning(title="Warning", message="Password cannot be blank")
+            messagebox.showerror(title="Error", message="Password cannot be blank")
         elif " " in self.mRegister.mVarUsername.get():
-            messagebox.showwarning(title="Warning", message="Username should not have space!")
+            messagebox.showerror(title="Error", message="Username should not have space!")
         elif len(selectUser(self.mRegister.mVarUsername.get())) != 0:
-            messagebox.showwarning(title="Warning", message="Username is not unique")
+            messagebox.showerror(title="Error", message="Username is not unique")
         elif " " in self.mRegister.mVarPassword.get():
-            messagebox.showwarning(title="Warning", message="Password should not have space!")
+            messagebox.showerror(title="Error", message="Password should not have space!")
         elif len(self.mRegister.mVarPassword.get()) < 8:
-            messagebox.showwarning(title="Warning", message="Password should have 8 characters!")
+            messagebox.showerror(title="Error", message="Password should have 8 characters!")
         elif self.mRegister.mVarPassword.get() != self.mRegister.mVarRePassword.get():
-            messagebox.showwarning(title="Warning", message="Password and Re-Password is not the same!")
+            messagebox.showerror(title="Error", message="Password and Re-Password is not the same!")
         else:
             insertUser(self.mRegister.mVarUsername.get(), self.mRegister.mVarPassword.get())
         self.mRegister.mTk.destroy()
@@ -481,9 +481,9 @@ class Controller:
 
     def submitTask(self):
         if self.mAddTask.mVarTitle.get().strip() == "":  # empty title constraint
-            messagebox.showwarning(title="Warning", message="No empty titles allowed!")
+            messagebox.showerror(title="Error", message="No empty titles allowed!")
         elif self.isDuplicateTitle(True):  # unique constraint
-            messagebox.showwarning(title="Warning", message="No duplicate titles allowed!")
+            messagebox.showerror(title="Error", message="No duplicate titles allowed!")
         else:
 
             assignees = []
@@ -517,10 +517,10 @@ class Controller:
 
     def editTaskView(self):
         if self.mUpdateTask.mVarTitle.get().strip() == "":  # empty title constraint
-            messagebox.showwarning(title="Warning", message="No empty titles allowed!")
+            messagebox.showerror(title="Error", message="No empty titles allowed!")
         elif self.isDuplicateTitle(False) and self.mUpdateTask.mVarTitle.get() \
                 != self.mUpdateTask.mOldTitle:  # unique constraint for edit
-            messagebox.showwarning(title="Warning", message="No duplicate titles allowed!")
+            messagebox.showerror(title="Error", message="No duplicate titles allowed!")
         else:
             old_t = self.deleteTaskOnUpdate()  # delete old task
             old_t.deleteTaskToProjectID(self.mModel.mProjectName, self.mModel.mUserID)
@@ -789,9 +789,9 @@ class Controller:
 
     def submitMember(self):
         if self.mAddMember.mVarName.get().strip() == "":  # empty title constraint
-            messagebox.showwarning(title="Warning", message="No empty name allowed!")
+            messagebox.showerror(title="Error", message="No empty name allowed!")
         elif self.isDuplicateName(True):  # unique constraint
-            messagebox.showwarning(title="Warning", message="No duplicate name allowed!")
+            messagebox.showerror(title="Error", message="No duplicate name allowed!")
         # elif self.mModel.mUserID == selectUser(self.mAddMember.mVarName.get())[0][0]:
         #     messagebox.showwarning(title="Warning", message="Don't add yourself as a member!")
         else:
@@ -803,6 +803,8 @@ class Controller:
 
                 self.memberListUpdate()  # update task list view
                 self.destroyAddMember()
+            messagebox.showwarning(title="Warning", message="If there is no such username in the database"
+                                                            ", no member will be added")
 
     def memberListUpdate(self):
         # delete all members in view
